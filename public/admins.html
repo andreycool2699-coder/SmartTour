@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Друзья рекомендуют</title>
+<style>
+td {padding:5px;}
+button{margin: 5px;}
+</style>
+</head>
+<body>
+    <h2>Список администраторов </h2>
+    <div>
+        <input type="hidden" id="adminId" />
+
+        <p>
+            Имя:<br/>
+            <input id="adminName" />
+        </p>
+
+        <p>
+            Пост:<br/>
+            <input id="adminPost" />
+        </p>
+        <p>
+            Возраст:<br />
+            <input id="adminAge" type="number" />
+        </p>
+         <p>
+            <button id="saveBtn">Сохранить</button>
+            <button id="resetBtn">Сбросить</button>
+        </p>
+    </div>
+    <table>
+        <thead><tr><th>Имя</th><th>Пост</th><th>Возраст</th><th></th></tr></thead>
+        <tbody>
+        </tbody>
+    </table>
+  
+    <script>
+    // Получение всех пользователей
+        async function getAdmins() {
+            // отправляет запрос и получаем ответ
+            const response = await fetch("/api/admins", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            // если запрос прошел нормально
+            if (response.ok === true) {
+                // получаем данные
+                const admins = await response.json();
+                const rows = document.querySelector("tbody");
+                // добавляем полученные элементы в таблицу
+                admins.forEach(admin => rows.append(row(admin)));
+            }
+        }
+        // Получение одного пользователя
+        async function getadmin(id) {
+            const response = await fetch(`/api/admins/${id}`, {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const admin = await response.json();
+                document.getElementById("adminId").value = admin.id;
+                document.getElementById("adminName").value = admin.name;
+	        document.getElementById("adminPost").value = admin.post;
+                document.getElementById("adminAge").value = admin.age;
+            }
+            else {
+                // если произошла ошибка, получаем сообщение об ошибке
+                const error = await response.json();
+                console.log(error.message); // и выводим его на консоль
+            }
+        }
+        // Добавление пользователя
+        async function createadmin(adminName, adminPost, adminAge) {
+  
+            const response = await fetch("api/admins", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: adminName,
+                    post: adminPost,
+                    age: parseInt(adminAge, 10)
+                })
+            });
+            if (response.ok === true) {
+                const admin = await response.json();
+                document.querySelector("tbody").append(row(admin));
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+        // Изменение пользователя
+        async function editadmin(adminId, adminName, adminPost, adminAge) {
+            const response = await fetch("api/admins", {
+                method: "PUT",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: adminId,
+                    name: adminName,
+                    post: adminPost,
+                    age: parseInt(adminAge, 10)
+                })
+            });
+            if (response.ok === true) {
+                const admin = await response.json();
+                document.querySelector(`tr[data-rowid='${admin.id}']`).replaceWith(row(admin));
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+        // Удаление пользователя
+        async function deleteadmin(id) {
+            const response = await fetch(`/api/admins/${id}`, {
+                method: "DELETE",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const admin = await response.json();
+                document.querySelector(`tr[data-rowid='${admin.id}']`).remove();
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+  
+        // сброс данных формы после отправки
+        function reset() {
+            document.getElementById("adminId").value = 
+            document.getElementById("adminName").value = 
+	    document.getElementById("adminPost").value = 
+            document.getElementById("adminAge").value = "";
+        }
+        // создание строки для таблицы
+        function row(admin) {
+  
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-rowid", admin.id);
+  
+            const nameTd = document.createElement("td");
+            nameTd.append(admin.name);
+            tr.append(nameTd);
+  
+            const postTd = document.createElement("td");
+            postTd.append(admin.post);
+            tr.append(postTd);
+
+            const ageTd = document.createElement("td");
+            ageTd.append(admin.age);
+            tr.append(ageTd);
+  
+            const linksTd = document.createElement("td");
+  
+            const editLink = document.createElement("button"); 
+            editLink.append("Изменить");
+            editLink.addEventListener("click", async() => await getadmin(admin.id));
+            linksTd.append(editLink);
+  
+            const removeLink = document.createElement("button"); 
+            removeLink.append("Удалить");
+            removeLink.addEventListener("click", async () => await deleteadmin(admin.id));
+  
+            linksTd.append(removeLink);
+            tr.appendChild(linksTd);
+  
+            return tr;
+        }
+        // сброс значений формы
+        document.getElementById("resetBtn").addEventListener("click", () =>  reset());
+  
+        // отправка формы
+        document.getElementById("saveBtn").addEventListener("click", async () => {
+             
+            const id = document.getElementById("adminId").value;
+            const name = document.getElementById("adminName").value;
+	    const post = document.getElementById("adminPost").value;
+            const age = document.getElementById("adminAge").value;
+            if (id === "")
+                await createadmin(name, post, age);
+            else
+                await editadmin(id, name, post, age);
+            reset();
+        });
+  
+        // загрузка пользователей
+        getAdmins();
+    </script>
+</body>
+</html>

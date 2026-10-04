@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Recommended By Friends</title>
+<style>
+td {padding:5px;}
+button{margin: 5px;}
+</style>
+</head>
+<body>
+    <h2>Список отелей</h2>
+    <div>
+        <input type="hidden" id="hotelId" />
+        <p>
+            Отель:<br/>
+            <input id="hotel" />
+        </p>
+        <p>
+            Дата:<br />
+            <input id="date1" type="date" />
+        </p>
+        <p>
+            email:<br />
+            <input id="email" type="string" />
+        </p>
+        <p>
+            Номер телефона:<br />
+            <input id="phone_number" type="string" />
+        </p>
+        <p>
+            Адрес отеля:<br />
+            <input id="hotel_address" type="string" />
+        </p>
+        <p>
+            date2:<br />
+            <input id="date2" type="date" />
+        </p>
+        <p>
+            Комментарии:<br />
+            <input id="special_notes" type="string" />
+        </p>
+         <p>
+            <button id="saveBtn">Сохранить</button>
+            <button id="resetBtn">Сбросить</button>
+        </p>
+    </div>
+    <table>
+        <thead><tr><th>Отель</th><th>Дата1</th><th>email</th><th>Номер телефона</th><th>Адрес отеля</th><th>Дата2</th><th>Комментарии</th><th></th></tr></thead>
+        <tbody>
+        </tbody>
+    </table>
+  
+    <script>
+    // Получение всех отелей
+        async function getHotels() {
+            // отправляет запрос и получаем ответ
+            const response = await fetch("/api/hotels", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            // если запрос прошел нормально
+            if (response.ok === true) {
+                // получаем данные
+                const hotels= await response.json();
+                const rows = document.querySelector("tbody");
+                // добавляем полученные элементы в таблицу
+               hotels.forEach(hotel => rows.append(row(hotel)));
+            }
+        }
+        // Получение одного пользователя
+        async function getHotel(id) {
+            const response = await fetch(`/api/hotels/${id}`, {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const hotel= await response.json();
+                document.getElementById("hotelId").value = hotel.id;
+                document.getElementById("hotel").value = hotel.name;
+                document.getElementById("date1").value = hotel.date1;
+                document.getElementById("email").value = hotel.email;
+                document.getElementById("phone_number").value = hotel.phone_number;
+                document.getElementById("hotel_address").value = hotel.hotel_address;
+                document.getElementById("date2").value = hotel.date2;
+		document.getElementById("special_notes").value = hotel.special_notes;
+            }
+            else {
+                // если произошла ошибка, получаем сообщение об ошибке
+                const error = await response.json();
+                console.log(error.message); // и выводим его на консоль
+            }
+        }
+        // Добавление отеля
+        async function createHotel(hotel,date1,email,phone_number,hotel_address,date,special_notes) {
+  
+            const response = await fetch("api/hotels", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                   hotel1: hotel,
+                   date2: date1,
+                   email1: email,
+                   phone_number1: phone_number,
+                   hotel_address1: hotel_address,
+                   date3: date2,
+		   special_notes1: special_notes
+                })
+            });
+            if (response.ok === true) {
+                const hotel = await response.json();
+                document.querySelector("tbody").append(row(hotel));
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+        // Изменение отеля editHotel(hotelId,hotel,date1,email,phone_number,hotel_address,date,special_note) {
+            const response = await fetch("api/hotels", {
+                method: "PUT",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                   id: hotelId,
+                   hotel1: hotel,
+                   date2: date1,
+                   email1: email,
+                   phone_number1: phone_number,
+                   hotel_address1: hotel_address,
+                   date3: date2,
+		   special_notes1: special_notes
+                })
+            });
+            if (response.ok === true) {
+                const hotel = await response.json();
+                document.querySelector(`tr[data-rowid='${hotel.id}']`).replaceWith(row(hotel));
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+        // Удаление пользователя
+        async function deleteHotel(id) {
+            const response = await fetch(`/api/hotels/${id}`, {
+                method: "DELETE",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const hotel= await response.json();
+                document.querySelector(`tr[data-rowid='${hotel.id}']`).remove();
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+  
+        // сброс данных формы после отправки
+        function reset() {
+            document.getElementById("hotelId").value =
+            document.getElementById("hotel").value = 
+            document.getElementById("date1").value = 
+            document.getElementById("email").value = 
+            document.getElementById("phone_number").value = 
+            document.getElementById("hotel_address").value = 
+            document.getElementById("date2").value = 
+	    document.getElementById("special_notes").value = "";
+        // создание строки для таблицы
+        function row(hotel1) {
+  
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-rowid", hotel.id);
+  
+            const hotelTd = document.createElement("td");
+            hotelTd.append(hotel1.hotel);
+            tr.append(hotelTd);
+	    
+            const date1Td = document.createElement("td");
+            date1Td.append(hotel1.Date1);
+            tr.append(Date1lTd);
+
+            const emailTd = document.createElement("td");
+            emailTd.append(hotel1.email);
+            tr.append(emailTd);
+
+            const phone_numberTd = document.createElement("td");
+            phone_numberTd.append(hotel1.phone_number);
+            tr.append(phone_numberTd);
+
+            const hotel_addressTd = document.createElement("td");
+            hotel_addressTd.append(hotel1.hotel_address);
+            tr.append(hotel_addressTd);
+  
+	    const date2Td = document.createElement("td");
+            date2Td.append(hotel1.Date2);
+            tr.append(Date2lTd);
+
+            const special_notesTd = document.createElement("td");
+            special_notesTd.append(hotel1.special_notes);
+            tr.append(Date1lTd);
+  
+            const linksTd = document.createElement("td");
+  
+            const editLink = document.createElement("button"); 
+            editLink.append("Изменить");
+            editLink.addEventListener("click", async() => await getHotel(Hotel.id));
+            linksTd.append(editLink);
+  
+            const removeLink = document.createElement("button"); 
+            removeLink.append("Удалить");
+            removeLink.addEventListener("click", async () => await deleteHotel(hotel.id));
+  
+            linksTd.append(removeLink);
+            tr.appendChild(linksTd);
+  
+            return tr;
+        }
+        // сброс значений формы
+        document.getElementById("resetBtn").addEventListener("click", () =>  reset());
+  
+        // отправка формы
+        document.getElementById("saveBtn").addEventListener("click", async () => {
+             
+            const id = document.getElementById("hotelId").value;
+            const hotel = document.getElementById("hotel").value;
+            const Date1 = document.getElementById("date1").value;
+            const hotel = document.getElementById("email").value;
+            const Date1 = document.getElementById("phone_number").value;
+            const hotel = document.getElementById("hotel_address").value;
+            const Date1 = document.getElementById("date2").value;
+            const hotel = document.getElementById("special_notes").value;
+
+            if (id === "")
+                await createHotel(hotel, date1,email, phone_number, hotel_address, date2, special_notes);
+            else
+                await editHotel(id,hotel, date1, email, phone_number, hotel_address, date2, special_notes);
+            reset();
+        });
+  
+        // загрузка пользователей
+        getHotels();
+    </script>
+</body>
+</html>
